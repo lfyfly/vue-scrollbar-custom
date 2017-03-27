@@ -14,7 +14,7 @@
     overflow-x: hidden;
   }
   .content {
-    overflow: hidden; // 避免父子margin重叠导致高度不一致
+    overflow: hidden; // BFC, 避免父子margin重叠导致高度不一致
     width: 300px; // 和.vue2-custom-scrollbar宽度一样， 把垂直滚动条顶出去
   }
   .scroll_bar_container {
@@ -44,15 +44,15 @@
     .content(ref="content")
       slot
   .scroll_bar_container(:style="barContainerStyle")
-    .scroll_bar(ref="bar", :style="scrollBarStyle")
-    //-.scroll_bar_contaner(v-show="showBar" ,:style="barContainerStyle",ref="barContainer")
-      .scroll_bar(ref="oBar", :style="scrollBarStyle")
+    .scroll_bar(v-drag.dragY="{ondrag:syncContent}",ref="bar", :style="scrollBarStyle")
+
 
 </template>
 
 <!-- ——————————————↓JS—————————分界线———————————————————————— -->
 <script>
-//import XXX from './components/XXX'
+import vDrag from '../v-drag/v-drag.js'
+console.log(vDrag)
 
 export default {
   name: 'vue2-custom-scrollbar',
@@ -81,14 +81,13 @@ export default {
   },
   computed: {
     containerHeight() {
-      console.log(this.$refs.innerContainer.offsetHeight)
       return this.$refs.innerContainer.offsetHeight
     },
     contentHeight() {
+      console.log(this.$refs.content.offsetHeight)
       return this.$refs.content.offsetHeight
     },
     barHeight() {
-      console.log(this.containerHeight, this.containerHeight, this.contentHeight)
       return this.containerHeight * this.containerHeight / this.contentHeight
     },
     // 转换系数
@@ -104,60 +103,20 @@ export default {
       this.$refs.bar.style.height = this.barHeight + 'px'
     },
     barScroll(e) {
-      console.log(e.target.scrollTop / this.transform)
       this.$refs.bar.style.top = e.target.scrollTop / this.transform + 'px'
     },
     // 拖动滚动条,内容区联动
     syncContent() {
-      console.log(this.barTop);
-
       this.$refs.innerContainer.scrollTop = this.$refs.bar.offsetTop * this.transform
     },
-    drapBar() {
-      this.$refs.bar.addEventListener('mousedown', (e) => {
-        e.preventDefault()
 
-
-        // this.barIsKeyDown = true // 滚动条正被鼠标按下
-
-        var disY = e.clientY - e.target.offsetTop
-        var mousemoveFn = (e) => {
-
-          e.preventDefault()
-
-          var top = e.clientY - disY
-
-          if (top < 0) {
-            top = 0
-          }
-          else if (top > this.containerHeight - this.barHeight) {
-
-            top = this.containerHeight - this.barHeight
-          }
-          this.barTop = top
-          this.$refs.bar.style.top = top + 'px'
-
-          // 内容区跟随滚动条拖动二滚动
-          this.syncContent()
-
-        }
-        document.addEventListener('mousemove', mousemoveFn)
-
-        var mouseupFn = function (e) {
-          console.log(e)
-          document.removeEventListener('mousemove', mousemoveFn)
-          document.removeEventListener('mouseup', mouseupFn)
-        }
-
-        document.addEventListener('mouseup', mouseupFn)
-      })
-    },
   },
   mounted() {
     // 初始化滚动条高度
     this.setBarHeight()
-    // 滚动条拖动事件
-    this.drapBar()
+  },
+  directives: {
+    drag: vDrag
   }
 }
 </script>

@@ -19,9 +19,6 @@ export default {
 
 <style lang="scss">
 #app {
-  // h1{
-  //   margin:0;
-  //   height:100px
-  // }
+
 }
 </style>

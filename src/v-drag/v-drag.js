@@ -1,5 +1,4 @@
 
-// (function () {
 var vDrag = {
   inserted: function (el, binding) {
     // 定位初始化
