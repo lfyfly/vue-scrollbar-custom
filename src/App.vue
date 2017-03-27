@@ -34,7 +34,9 @@ export default {
 html,body{
 }
 #app {
-  height: 100%;
-  box-sizing: border-box;
+  h1{
+    height: 100px;
+    margin: 50px 0;
+  }
 }
 </style>

@@ -13,7 +13,7 @@
     -webkit-overflow-scrolling: touch;
   }
   .content {
-    overflow: hidden; // BFC, 避免父子margin重叠导致高度不一致
+    float: left; // BFC, 避免父子margin重叠导致高度不一致
   }
   .scroll_bar_container {
     // 样式接口
@@ -81,16 +81,19 @@ export default {
     },
     isHideBar: {
       type: Boolean,
-      default: true
+      default: false
     },
+    // 容器宽度
     width: {
       type: String,
       default: '100%'
     },
+    // 容器高度
     height: {
       type: String,
       default: '400px'
     },
+    // 滚动条容器样式
     barContainerStyle: {
       type: Object,
       default: function () {
@@ -99,6 +102,7 @@ export default {
         }
       }
     },
+    // 滚动条样式
     scrollBarStyle: {
       type: Object,
       default: function () {
@@ -110,6 +114,7 @@ export default {
         }
       }
     },
+    // 顶部滚动条样式
     topBarStyle: {
       type: Object,
       default: function () {
@@ -118,10 +123,8 @@ export default {
           backgroundColor: '#17ce28'
         }
       }
-    },
-    alwayShow: {
-      type: Boolean
     }
+    // 外加一个从计算的方法 reCalcu ，同过组件的ref访问到
   },
   computed: {
 
@@ -137,19 +140,36 @@ export default {
 
   },
   methods: {
+    // 容器大于内容时,不需要滚动条
+    needScroll() {
+      this.$nextTick(() => {
+        this.$refs.bar.parentNode.style.display = this.containerHeight >= this.contentHeight ? 'none' : 'block'
+      })
+    },
     reCalcu() {
-      this.setContainerHeight()
-      this.setContentHeight()
-      this.setBarHeight()
-      this.initContentWidth()
-      this.getTransformTop()
-      this.syncTopBarWidth()
+      // 高度动态变化，所以要nextTick
+      this.$nextTick(() => {
+        this.setContainerHeight()
+        this.setContentHeight()
+        this.setBarHeight()
+        this.initContentWidth()
+        this.getTransformTop()
+        this.syncTopBarWidth()
+
+      })
+      this.needScroll()
     },
     setContainerHeight() {
+      console.log('this.$refs.innerContainer.offsetHeight', this.$refs.innerContainer.offsetHeight)
+
       this.containerHeight = this.$refs.innerContainer.offsetHeight
+      console.log('this.containerHeight', this.containerHeight)
     },
     setContentHeight() {
+      console.log('this.$refs.content.offsetHeight', this.$refs.content.offsetHeight)
+
       this.contentHeight = this.$refs.content.offsetHeight
+      console.log('this.contentHeight', this.contentHeight)
     },
     // 把滚动条隐藏
     initContentWidth() {
@@ -226,6 +246,7 @@ export default {
     // 初始化滚动条高度
     this.setBarHeight()
 
+    this.needScroll()
     window.addEventListener('resize', () => {
       this.reCalcu()
     })
