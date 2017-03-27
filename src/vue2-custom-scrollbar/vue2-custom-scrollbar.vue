@@ -3,23 +3,20 @@
 .vue2-custom-scrollbar {
   position: relative;
   overflow: hidden;
-  width: 300px;
-  height: 400px;
-  border: 1px solid;
+  border: 1px solid red;
   .scrollbar-hide {
     position: absolute;
     left: 0;
     height: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
   .content {
     overflow: hidden; // BFC, 避免父子margin重叠导致高度不一致
-    width: 300px; // 和.vue2-custom-scrollbar宽度一样， 把垂直滚动条顶出去
   }
   .scroll_bar_container {
     // 样式接口
-    width: 10px;
     height: 100%;
     position: absolute;
     right: 0;
@@ -28,23 +25,36 @@
     .scroll_bar {
       position: absolute;
       top: 0;
-      width: 6px; // height: 10px; // 由内容高度与容器高度比计算而得
-      left: 50%;
-      margin-left: -3px; // 居中
-      background: #ccc;
+      transition: opacity 1s;
+      height: 100%;
     }
+  }
+  .topBar_container {
+    z-index: 10;
+
+    position: absolute;
+    top: 0;
+  }
+  .topBar {
+    z-index: 10;
   }
 }
 </style>
 
 <!-- —————————————↓HTML————————分界线———————————————————————— -->
 <template lang="pug">
-.vue2-custom-scrollbar(ref="container")
-  .scrollbar-hide(@scroll="barScroll" ref="innerContainer")
+.vue2-custom-scrollbar(ref="container",:style="{width:width,height:height}")
+  .scrollbar-hide(@scroll="barScroll", ref="innerContainer")
     .content(ref="content")
       slot
-  .scroll_bar_container(:style="barContainerStyle")
-    .scroll_bar(v-drag.dragY="{ondrag:syncContent}",ref="bar", :style="scrollBarStyle")
+  .scroll_bar_container(v-if="!isTopBar",
+      :style="[barContainerStyle,{background:isHideBar?'rgba(0,0,0,0)':barContainerStyle.bacground}]",
+      @mouseover="barHover",
+      @mouseout="timeOutHideBar"
+    )
+    .scroll_bar(v-drag.dragY="{ondrag:syncContent}",ref="bar", :style="[scrollBarStyle,{opacity:isHideBar?0:1}]")
+  .topBar_container(v-else)
+    .topBar(ref="topBar", :style="topBarStyle")
 
 
 </template>
@@ -59,34 +69,63 @@ export default {
   data() {
     return {
       msg: 'this is from vue2-custom-scrollbar.vue',
-      barIsKeyDown: false
+      timer: null,
+      containerHeight: '',
+      contentHeight: ''
     }
   },
   props: {
+    isTopBar: {
+      type: Boolean,
+      default: false
+    },
+    isHideBar: {
+      type: Boolean,
+      default: true
+    },
     width: {
-      type: [Number, String]
+      type: String,
+      default: '100%'
     },
     height: {
-      type: [Number, String]
+      type: String,
+      default: '400px'
     },
     barContainerStyle: {
-      type: Object
+      type: Object,
+      default: function () {
+        return {
+          width: '8px',
+        }
+      }
     },
     scrollBarStyle: {
-      type: Object
+      type: Object,
+      default: function () {
+        return {
+          width: '6px',
+          borderRadius: this.isHideBar ? '3px' : '',
+          background: '#ccc'
+
+        }
+      }
+    },
+    topBarStyle: {
+      type: Object,
+      default: function () {
+        return {
+          height: '3px',
+          backgroundColor: '#17ce28'
+        }
+      }
     },
     alwayShow: {
       type: Boolean
     }
   },
   computed: {
-    containerHeight() {
-      return this.$refs.innerContainer.offsetHeight
-    },
-    contentHeight() {
-      console.log(this.$refs.content.offsetHeight)
-      return this.$refs.content.offsetHeight
-    },
+
+
     barHeight() {
       return this.containerHeight * this.containerHeight / this.contentHeight
     },
@@ -95,25 +134,101 @@ export default {
       // 容器滚动的高度是滚动条移动的多少倍
       return (this.contentHeight - this.containerHeight) / (this.containerHeight - this.barHeight)
     },
+
   },
   methods: {
+    reCalcu() {
+      this.setContainerHeight()
+      this.setContentHeight()
+      this.setBarHeight()
+      this.initContentWidth()
+      this.getTransformTop()
+      this.syncTopBarWidth()
+    },
+    setContainerHeight() {
+      this.containerHeight = this.$refs.innerContainer.offsetHeight
+    },
+    setContentHeight() {
+      this.contentHeight = this.$refs.content.offsetHeight
+    },
+    // 把滚动条隐藏
+    initContentWidth() {
+      this.$refs.content.style.width = this.$refs.container.offsetWidth + 'px'
+    },
+    // 用户只需要设置外层宽度和内层滚动条宽度，自动居中
+    centerBar() {
+      if (this.isTopBar) return
+      var left = (parseInt(this.barContainerStyle.width) - parseInt(this.scrollBarStyle.width)) / 2 + 'px'
+      this.$refs.bar.style.left = left
+    },
+    barHover() {
+      this.clearTimer()
+      this.showBar()
+    },
+    showBar() {
+      if (!this.isHideBar) return
+      this.$refs.bar.style.opacity = "1"
+    },
+    timeOutHideBar() {
+      if (!this.isHideBar) return
+
+      console.log(this.timer)
+      this.timer = setTimeout(() => {
+        this.$refs.bar.style.opacity = "0"
+      }, 2000)
+    },
+    clearTimer() {
+      if (!this.isHideBar) return
+
+      if (this.timer) clearTimeout(this.timer)
+    },
+    getTransformTop() {
+      // 容器滚动的高度是滚动条移动的多少倍
+      return this.$refs.innerContainer.scrollTop / (this.contentHeight - this.containerHeight)
+    },
     // 与其他同类插件相比，不适用wheel事件，使用原生事件
     // 滚动事件，滚动条联动
     setBarHeight() {
+      if (this.isTopBar) return
       this.$refs.bar.style.height = this.barHeight + 'px'
     },
     barScroll(e) {
+      // 隐藏滚动条的情况下执行
+      this.clearTimer()
+      this.showBar()
+      this.timeOutHideBar()
+
+      // 顶部滚动条
+      if (this.isTopBar) {
+        this.syncTopBarWidth()
+        return
+      }
       this.$refs.bar.style.top = e.target.scrollTop / this.transform + 'px'
+
     },
     // 拖动滚动条,内容区联动
     syncContent() {
+      if (this.isTopBar) return
       this.$refs.innerContainer.scrollTop = this.$refs.bar.offsetTop * this.transform
     },
+    syncTopBarWidth() {
+      if (this.isTopBar) this.$refs.topBar.style.width = this.$refs.innerContainer.offsetWidth * this.getTransformTop() + 'px'
+    }
 
   },
+  created() {
+    if (this.isTopBar && this.isHideBar) throw ('isTopBar and isHideBar can\'t at the same time to true')
+  },
   mounted() {
+    this.initContentWidth()
+    // 居中bar
+    this.centerBar()
     // 初始化滚动条高度
     this.setBarHeight()
+
+    window.addEventListener('resize', () => {
+      this.reCalcu()
+    })
   },
   directives: {
     drag: vDrag

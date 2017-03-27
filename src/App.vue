@@ -1,7 +1,8 @@
 <template>
   <div id="app">
-    <v-scrollbar>
-      <h1 v-for="n in 30">{{n}}</h1>
+    <button @click="push">push</button>
+    <v-scrollbar ref="barChild">
+      <h1 v-for="n in arr">{{n}}</h1>
     </v-scrollbar>
   </div>
 </template>
@@ -11,6 +12,18 @@ import vScrollbar from './vue2-custom-scrollbar/vue2-custom-scrollbar.vue'
 
 export default {
   name: 'app',
+  data () {
+    return {
+      arr:[123]
+    }
+  },
+  methods: {
+    push () {
+      this.arr.push(123)
+      console.log(this.$refs.barChild)
+      this.$refs.barChild.reCalcu()
+    }
+  },
   components: {
     vScrollbar
   }
@@ -18,7 +31,10 @@ export default {
 </script>
 
 <style lang="scss">
+html,body{
+}
 #app {
-
+  height: 100%;
+  box-sizing: border-box;
 }
 </style>
