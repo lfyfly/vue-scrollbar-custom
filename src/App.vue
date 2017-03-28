@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <button @click="push">push</button>
-    <v-scrollbar ref="barChild">
+    <v-scrollbar class="vScrollbar" ref="barChild">
       <h1 v-for="n in arr">{{n}}</h1>
     </v-scrollbar>
   </div>
@@ -20,7 +20,6 @@ export default {
   methods: {
     push () {
       this.arr.push(123)
-      console.log(this.$refs.barChild)
       this.$refs.barChild.reCalcu()
     }
   },
