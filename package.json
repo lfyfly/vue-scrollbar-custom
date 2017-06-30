@@ -1,18 +1,19 @@
 {
   "name": "vue-scrollbar-custom",
-  "version": "1.0.4",
-  "description": "A Vue.js project",
+  "version": "1.0.9",
+  "description": "vue-scrollbar-custom",
   "author": "lfyfly <410793635@qq.com>",
-  "main": "index.js",
+  "main": "./src/components/vue-scrollbar-custom/vue-scrollbar-custom.vue",
   "scripts": {
     "dev": "node build/dev-server.js",
     "build": "node build/build.js"
   },
-  "dependencies": {
-    "node-sass": "^4.5.0",
-    "vue": "^2.1.10"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "highlightjs": "^9.10.0",
+    "jstransformer-markdown-it": "^2.0.0",
+    "node-sass": "^4.5.0",
+    "vue": "^2.1.10",
     "autoprefixer": "^6.7.2",
     "babel-core": "^6.22.1",
     "babel-loader": "^6.2.10",
