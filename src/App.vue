@@ -1,6 +1,6 @@
 <template lang="pug">
 #app
-  h1.document-title vue-custom-scroll demo
+  //- h1.document-title vue-custom-scroll demo
   :markdown-it(linkify langPrefix='highlight-')
     ## 1.默认样式
     ```html
@@ -71,9 +71,9 @@
   :markdown-it(linkify langPrefix='highlight-')
     ## 6.当滚动内容高度动态变化时，执行重新计算
     ### html
-      ```
-        <v-scrollbar ref="vScrollbar6" class="vScrollbar6">
-          <h1 v-row v-for="v in testArr">{{v}}</h1>
+      ```js
+        <v-scrollbar  ref="vScrollbar6" class="vScrollbar6">
+          <h1 v-for="v in testArr">{{v}}</h1>
           <button @click="addContent"> add coontent </button>
         </v-scrollbar>
 
@@ -153,7 +153,7 @@ body {
 }
 
 #app {
-  width: 660px;
+  max-width: 660px;
   margin: 0 auto;
   height: 100%;
 
@@ -172,10 +172,14 @@ body {
   .vScrollbar4,
   .vScrollbar5,
   .vScrollbar6 {
-    width: 400px;
+    max-width: 400px;
     height: 200px; // position: absolute;
     border: 1px solid red;
     margin: auto;
+  }
+  .vScrollbar4{
+    background: #272822;
+    color: #959595;
   }
 }
 </style>
